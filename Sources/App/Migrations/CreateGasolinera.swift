@@ -1,9 +1,8 @@
-// Sources/App/Migrations/CreateGasolinera.swift
 import Fluent
 
 struct CreateGasolinera: Migration {
-    func prepare(on database: Database) async throws {
-        try await database.schema(Gasolinera.schema)
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("gasolineras")
             .id()
             .field("ideess", .string, .required)
             .field("rotulo", .string, .required)
@@ -16,8 +15,8 @@ struct CreateGasolinera: Migration {
             .unique(on: "ideess")
             .create()
     }
-    
-    func revert(on database: Database) async throws {
-        try await database.schema(Gasolinera.schema).delete()
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("gasolineras").delete()
     }
 }

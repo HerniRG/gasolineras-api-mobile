@@ -1,11 +1,9 @@
-// Sources/App/Models/Gasolinera.swift
-import Foundation
 import Fluent
 import Vapor
 
 final class Gasolinera: Model, Content {
     static let schema = "gasolineras"
-    
+
     @ID(key: .id)
     var id: UUID?
 
@@ -33,11 +31,28 @@ final class Gasolinera: Model, Content {
     @Field(key: "latitud")
     var latitud: Double?
 
-    // Relaciones
     @Children(for: \.$gasolinera)
     var precios: [PrecioGasolina]
 
     init() {}
 
-    // Resto del modelo igual que antes
+    init(
+        ideess: String,
+        rotulo: String,
+        direccion: String,
+        localidad: String,
+        provincia: String,
+        horario: String,
+        longitud: Double?,
+        latitud: Double?
+    ) {
+        self.ideess = ideess
+        self.rotulo = rotulo
+        self.direccion = direccion
+        self.localidad = localidad
+        self.provincia = provincia
+        self.horario = horario
+        self.longitud = longitud
+        self.latitud = latitud
+    }
 }

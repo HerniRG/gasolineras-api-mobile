@@ -1,4 +1,3 @@
-// Sources/App/Models/RespuestaAPI.swift
 import Foundation
 
 struct RespuestaAPI: Codable {
@@ -33,7 +32,7 @@ struct GasolineraData: Codable {
     let precioEsterMetilico: Double?
     let longitud: Double?
     let latitud: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case id = "IDEESS"
         case rotulo = "Rótulo"

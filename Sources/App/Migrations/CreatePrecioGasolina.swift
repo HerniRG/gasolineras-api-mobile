@@ -1,11 +1,10 @@
-// Sources/App/Migrations/CreatePrecioGasolina.swift
 import Fluent
 
 struct CreatePrecioGasolina: Migration {
-    func prepare(on database: Database) async throws {
-        try await database.schema(PrecioGasolina.schema)
+    func prepare(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("precios_gasolina")
             .id()
-            .field("gasolinera_id", .uuid, .required, .references(Gasolinera.schema, .id))
+            .field("gasolinera_id", .uuid, .required, .references("gasolineras", .id))
             .field("fecha", .date, .required)
             .field("precio_gasolina95", .double)
             .field("precio_gasolina98", .double)
@@ -20,8 +19,8 @@ struct CreatePrecioGasolina: Migration {
             .field("precio_ester_metilico", .double)
             .create()
     }
-    
-    func revert(on database: Database) async throws {
-        try await database.schema(PrecioGasolina.schema).delete()
+
+    func revert(on database: Database) -> EventLoopFuture<Void> {
+        database.schema("precios_gasolina").delete()
     }
 }
