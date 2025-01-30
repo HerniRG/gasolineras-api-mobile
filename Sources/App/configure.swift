@@ -31,7 +31,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreatePrecioGasolina())
 
     // Configurar Queues con Redis
-    try app.queues.use(.redis(url: "redis://127.0.0.1:6379"))
+    try app.queues.use(.redis(url: "redis://localhost:6379"))
 
     // Programar el AsyncJob
     _ = app.queues.schedule(ActualizarGasolinerasQueueJob())
