@@ -1,42 +1,44 @@
+import Vapor
+import Queues
 import Fluent
 import FluentPostgresDriver
-import Vapor
-
-// Importamos Queues y el driver para Redis
-import Queues
 import QueuesRedisDriver
 
 public func configure(_ app: Application) async throws {
-    // 1. Configurar PostgreSQL
-    app.databases.use(.postgres(
-        hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-        port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? 5432,
-        username: Environment.get("DATABASE_USERNAME") ?? "postgres",
-        password: Environment.get("DATABASE_PASSWORD") ?? "",
-        database: Environment.get("DATABASE_NAME") ?? "gasolineras_db"
-    ), as: .postgres)
+    let databaseHost = Environment.get("DATABASE_HOST") ?? "localhost"
+    let databasePortString = Environment.get("DATABASE_PORT")
+    let databasePort = databasePortString.flatMap(Int.init(_:)) ?? 5432
+    let databaseUsername = Environment.get("DATABASE_USERNAME") ?? "postgres"
+    let databasePassword = Environment.get("DATABASE_PASSWORD") ?? ""
+    let databaseName = Environment.get("DATABASE_NAME") ?? "gasolineras_db"
 
-    // 2. Migraciones
+    // 1. Crear una PostgresConfiguration
+    let pgConfig = PostgresConfiguration(
+        hostname: databaseHost,
+        port: databasePort,
+        username: databaseUsername,
+        password: databasePassword,
+        database: databaseName
+    )
+
+    // 2. Usar .postgres(configuration:)
+    app.databases.use(.postgres(
+        configuration: pgConfig
+    ), as: .psql)
+
+    // Migraciones
     app.migrations.add(CreateGasolinera())
     app.migrations.add(CreatePrecioGasolina())
 
-    // 3. Configurar Queues con Redis
-    // Asumiendo que Redis está en localhost:6379
+    // Configurar Queues con Redis
     try app.queues.use(.redis(url: "redis://127.0.0.1:6379"))
 
-    // Añadir el Job
-    app.queues.add(ActualizarGasolinerasQueueJob())
+    // Programar el AsyncJob
+    _ = app.queues.schedule(ActualizarGasolinerasQueueJob())
 
-    // Programar la ejecución diaria a medianoche (cron: 0 0 * * *)
-    app.queues.schedule(ActualizarGasolinerasQueueJob().cron("0 0 * * *"))
-
-    // Arrancar el worker en el mismo proceso (desarrollo / test local)
     try app.queues.startInProcessJobs(on: .default)
     try app.queues.startScheduledJobs()
 
-    // Ejecutar las migraciones
     try await app.autoMigrate()
-
-    // Rutas
     try routes(app)
 }
